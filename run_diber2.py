@@ -1,0 +1,106 @@
+from pytulio.discussion.comseq import *
+from pytulio.discussion.diber2.representation import *
+from pytulio.discussion.diber2.evaluation import *
+
+import matplotlib.pyplot as plt
+
+import argparse
+
+def parse_args():
+	argparser = argparse.ArgumentParser( description="Run the DiBER2 benchmark" )
+	argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="store_true" )
+	#argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="count", default=0 )
+	#argparser.add_argument( "-v", "--verbosity", type=int, choices=[0, 1, 2], help="increase output verbosity" )
+	argparser.add_argument( "comseq", help="input comseq filepath", type=str )
+	argparser.add_argument( "-o", "--outfile", help="output filepath", type=str )
+	return argparser.parse_args()
+
+def read_data(args):
+	if args.verbose: print("Reading comseq data from file '{}'...".format(args.comseq))
+	cseq = Comseq( args.comseq )
+	if args.verbose: print(" Subjects:", len(cseq.Subjects), "\n", "Threads:", len(cseq.Threads), "\n", "Comments:", len(cseq.Comments))
+	return cseq
+
+def generates_representations(args,cseq):
+
+	if args.verbose: print("Generating thread representations...")
+
+	ttext = cseq.threadtext_list()
+
+	reprs = { "TFIDF_base":tfidf_basico, "TFIDF_prod":produto_tfidf, "doc2vec-DM":doc2vec_dm, "doc2vec-DBOW":doc2vec_dbow }
+	thread_reprs = {}
+
+	for kr,repr_generator in reprs.items():
+		if args.verbose: print( "Generating", kr, "representation..." )
+		thread_reprs[kr] = repr_generator(ttext)
+		if args.verbose: print( " {} shape: {}".format(kr, thread_reprs[kr].shape) )
+
+	return thread_reprs
+
+def evaluate_representations(args,cseq,thread_reprs):
+
+	if args.verbose: print("Evaluating thread representations...")
+
+	evaluators = {}
+	for kr,r in thread_reprs.items():
+		evaluators[kr] = Evaluator( r, cseq )
+
+	#Clustering
+	if args.verbose: print("Clustering by subjects...")
+
+	for ev in evaluators.values():
+		ev.eval_clustering()
+
+	if args.verbose: print("Results:")
+	plt.hist(ev.rand_clustering(),histtype='step',label="rand")
+	for kr,ev in evaluators.items():
+		print( " V-measure ("+kr+"):", ev.vmeasure )
+		plt.scatter(ev.vmeasure,1,label=kr)
+	plt.legend()
+	plt.show()
+
+	#Thread Order
+	if args.verbose: print("Comparing thread order...")
+
+	for ev in evaluators.values():
+		ev.eval_order()
+
+	if args.verbose: print("Results:")
+
+	rand_order_correlations = ev.rand_order()
+	y = np.array(range(len(rand_order_correlations)))/float(len(rand_order_correlations))
+	x = np.sort(rand_order_correlations)
+	y = np.concatenate(([0],y))
+	x = np.concatenate(([-1],x))
+	plt.plot(x,y,label="rand",linestyle="--")
+	for kr,ev in evaluators.items():
+		print( " KS-stat ("+kr+"):", ss.ks_2samp(ev.order_correlations, rand_order_correlations) )
+		y = np.array(range(len(ev.order_correlations)))/float(len(ev.order_correlations))
+		x = np.sort(ev.order_correlations)
+		y = np.concatenate(([0],y))
+		x = np.concatenate(([-1],x))
+		plt.plot(x,y,label=kr)
+	plt.xlim(-1,1)
+	plt.legend()
+	plt.show()
+
+	#Recommendation
+	...
+
+	if args.verbose: print("Evaluation complete")
+
+if __name__ == '__main__':
+
+	args = parse_args()
+
+	if args.verbose:
+		print("Verbosity on")
+		print("Running '{}'".format(__file__))
+
+	cseq = read_data(args)
+
+	thread_reprs = generates_representations( args, cseq )
+
+	evaluate_representations( args, cseq, thread_reprs )
+
+	if args.verbose: print("Benchmark over")
