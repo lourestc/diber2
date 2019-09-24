@@ -1,6 +1,6 @@
 from pytulio.discussion.comseq import *
-from pytulio.discussion.diber2.representation import *
-from pytulio.discussion.diber2.evaluation import *
+from pytulio.discussion.representation import *
+from pytulio.discussion.evaluation import *
 
 import matplotlib.pyplot as plt
 
