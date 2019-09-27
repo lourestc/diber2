@@ -35,7 +35,7 @@ class Evaluator():
 		s_ids = [ t[0][self.cseq.subject_key] for t in self.cseq.Threads.values() ]
 		
 		ns = len(self.cseq.Subjects)
-		kmeans = KMeans( n_clusters=ns, random_state=0 ).fit(self.repr)
+		kmeans = KMeans( n_clusters=ns, random_state=0, n_jobs=-1 ).fit(self.repr)
 
 		clustering_measures = metrics.homogeneity_completeness_v_measure(s_ids, kmeans.labels_)
 		self.vmeasure = clustering_measures[2]

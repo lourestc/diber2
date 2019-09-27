@@ -27,12 +27,14 @@ def generates_representations(args,cseq):
 
 	ttext = cseq.threadtext_list()
 
-	reprs = { "TFIDF_base":tfidf_basico, "TFIDF_prod":produto_tfidf, "doc2vec-DM":doc2vec_dm, "doc2vec-DBOW":doc2vec_dbow }
+	#reprs = { "TFIDF_base":tfidf_basico, "TFIDF_prod":produto_tfidf, "doc2vec-DM":doc2vec_dm, "doc2vec-DBOW":doc2vec_dbow }
+	reprs = { "TFIDF_base":"tfidf_basico", "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" }
 	thread_reprs = {}
 
 	for kr,repr_generator in reprs.items():
 		if args.verbose: print( "Generating", kr, "representation..." )
-		thread_reprs[kr] = repr_generator(ttext)
+		#thread_reprs[kr] = repr_generator(ttext)
+		thread_reprs[kr] = globals()[repr_generator](ttext)
 		if args.verbose: print( " {} shape: {}".format(kr, thread_reprs[kr].shape) )
 
 	return thread_reprs
