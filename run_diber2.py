@@ -28,7 +28,8 @@ def generates_representations(args,cseq):
 	ttext = cseq.threadtext_list()
 
 	#reprs = { "TFIDF_base":tfidf_basico, "TFIDF_prod":produto_tfidf, "doc2vec-DM":doc2vec_dm, "doc2vec-DBOW":doc2vec_dbow }
-	reprs = { "TFIDF_base":"tfidf_basico", "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" }
+	#reprs = { "TFIDF_base":"tfidf_basico", "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" }
+	reprs = { "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" }
 	thread_reprs = {}
 
 	for kr,repr_generator in reprs.items():
