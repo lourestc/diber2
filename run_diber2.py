@@ -1,27 +1,38 @@
 from pytulio.discussion.comseq import *
-from pytulio.discussion.representation import *
-from pytulio.discussion.evaluation import *
+from pytulio.discussion.bendito.representation import *
+from pytulio.discussion.bendito.evaluation import *
+from pytulio.discussion.bendito.configuration import *
 
 import matplotlib.pyplot as plt
 
 import argparse
 
+#globals
+args = None
+config = None
+
 def parse_args():
 	argparser = argparse.ArgumentParser( description="Run the DiBER2 benchmark" )
+	argparser.add_argument( "comseq", help="input comseq filepath", type=str )
+	argparser.add_argument( "-o", "--outfile", help="output filepath", type=str )
+	argparser.add_argument( "-c", "--configfile", help="json file containing configuration settings", type=str, default="diber2-config.json" )
 	argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="store_true" )
 	#argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="count", default=0 )
 	#argparser.add_argument( "-v", "--verbosity", type=int, choices=[0, 1, 2], help="increase output verbosity" )
-	argparser.add_argument( "comseq", help="input comseq filepath", type=str )
-	argparser.add_argument( "-o", "--outfile", help="output filepath", type=str )
-	return argparser.parse_args()
+	args = argparser.parse_args()
 
-def read_data(args):
+def read_data():
 	if args.verbose: print("Reading comseq data from file '{}'...".format(args.comseq))
 	cseq = Comseq( args.comseq )
 	if args.verbose: print(" Subjects:", len(cseq.Subjects), "\n", "Threads:", len(cseq.Threads), "\n", "Comments:", len(cseq.Comments))
 	return cseq
 
-def generates_representations(args,cseq):
+def read_configuration():
+	if args.verbose: print("Reading configuration settings from file '{}'...".format(args.configfile))
+	config = BenditoConfig(args.configfile)
+	if args.verbose: print("Done.")
+
+def generates_representations(cseq):
 
 	if args.verbose: print("Generating thread representations...")
 
@@ -40,7 +51,7 @@ def generates_representations(args,cseq):
 
 	return thread_reprs
 
-def evaluate_representations(args,cseq,thread_reprs):
+def evaluate_representations(cseq,thread_reprs):
 
 	if args.verbose: print("Evaluating thread representations...")
 
@@ -116,16 +127,16 @@ def evaluate_representations(args,cseq,thread_reprs):
 
 if __name__ == '__main__':
 
-	args = parse_args()
+	parse_args()
+	
+	if args.verbose: print("Running '{}'".format(__file__))
 
-	if args.verbose:
-		print("Verbosity on")
-		print("Running '{}'".format(__file__))
+	read_configuration()
 
-	cseq = read_data(args)
+	cseq = read_data()
 
-	thread_reprs = generates_representations( args, cseq )
+	thread_reprs = generates_representations( cseq )
 
-	evaluate_representations( args, cseq, thread_reprs )
+	evaluate_representations( cseq, thread_reprs )
 
 	if args.verbose: print("Benchmark over")
