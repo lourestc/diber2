@@ -19,6 +19,8 @@ def parse_args():
 	argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="store_true" )
 	#argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="count", default=0 )
 	#argparser.add_argument( "-v", "--verbosity", type=int, choices=[0, 1, 2], help="increase output verbosity" )
+
+	global args
 	args = argparser.parse_args()
 
 def read_data():
@@ -29,6 +31,7 @@ def read_data():
 
 def read_configuration():
 	if args.verbose: print("Reading configuration settings from file '{}'...".format(args.configfile))
+	global config
 	config = BenditoConfig(args.configfile)
 	if args.verbose: print("Done.")
 

@@ -6,7 +6,12 @@ class BenditoConfig:
 
 		#reprs = { "TFIDF_base":"tfidf_basico", "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" }
 
-		with json.open(configfile,'r') as f:
+		print(configfile)
 
-			self.reprs = f['reprs']
-			self.evals = f['evals']
+		with open(configfile,'r') as f:
+			config = json.loads(f.read())
+
+		#print(ascii(jsonstring))
+
+		self.reprs = config['reprs']
+		self.evals = config['evals']

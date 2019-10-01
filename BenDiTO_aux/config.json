@@ -1,4 +1,4 @@
 {
-	'reprs' : { "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" },
-	'evals' : { "cluster by subjects":"eval_clustering", "compare thread order":"eval_order" },
+	"reprs" : { "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" },
+	"evals" : { "cluster by subjects":"eval_clustering", "compare thread order":"eval_order" }
 }
