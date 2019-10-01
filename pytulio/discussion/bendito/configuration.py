@@ -9,7 +9,7 @@ class BenditoConfig:
 		print(configfile)
 
 		with open(configfile,'r') as f:
-			config = json.loads(f.read())
+			config = json.load(f)
 
 		#print(ascii(jsonstring))
 
