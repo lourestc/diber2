@@ -14,8 +14,8 @@ config = None
 def parse_args():
 	argparser = argparse.ArgumentParser( description="Run the DiBER2 benchmark" )
 	argparser.add_argument( "comseq", help="input comseq filepath", type=str )
-	argparser.add_argument( "-o", "--outfile", help="output filepath", type=str )
-	argparser.add_argument( "-c", "--configfile", help="json file containing configuration settings", type=str, default="diber2-config.json" )
+	argparser.add_argument( "-o", "--outpath", help="output folder path", type=str )
+	argparser.add_argument( "-c", "--configfile", help="json file containing configuration settings", type=str, default="BenDiTO_aux/config.json" )
 	argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="store_true" )
 	#argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="count", default=0 )
 	#argparser.add_argument( "-v", "--verbosity", type=int, choices=[0, 1, 2], help="increase output verbosity" )
@@ -38,12 +38,9 @@ def generates_representations(cseq):
 
 	ttext = cseq.threadtext_list()
 
-	#reprs = { "TFIDF_base":tfidf_basico, "TFIDF_prod":produto_tfidf, "doc2vec-DM":doc2vec_dm, "doc2vec-DBOW":doc2vec_dbow }
-	#reprs = { "TFIDF_base":"tfidf_basico", "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" }
-	reprs = { "TFIDF_prod":"produto_tfidf", "doc2vec-DM":"doc2vec_dm", "doc2vec-DBOW":"doc2vec_dbow" }
 	thread_reprs = {}
 
-	for kr,repr_generator in reprs.items():
+	for kr,repr_generator in config.reprs.items():
 		if args.verbose: print( "Generating", kr, "representation..." )
 		#thread_reprs[kr] = repr_generator(ttext)
 		thread_reprs[kr] = globals()[repr_generator](ttext)
@@ -59,9 +56,7 @@ def evaluate_representations(cseq,thread_reprs):
 	for kr,r in thread_reprs.items():
 		evaluators[kr] = Evaluator( kr, r, cseq )
 
-	evaluations = { "cluster by subjects":"eval_clustering", "compare thread order":"eval_order" }
-
-	for ke,ev_func in evaluations.items():
+	for ke,ev_func in config.evals.items():
 		if args.verbose: print("Running evaluation task: "+ke+"...")
 		if args.verbose: print("Results:")
 		for ev in evaluators.values():
