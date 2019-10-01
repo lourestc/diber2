@@ -45,7 +45,6 @@ def generates_representations(cseq):
 
 	for kr,repr_generator in config.reprs.items():
 		if args.verbose: print( "Generating", kr, "representation..." )
-		#thread_reprs[kr] = repr_generator(ttext)
 		thread_reprs[kr] = globals()[repr_generator](ttext)
 		if args.verbose: print( " {} shape: {}".format(kr, thread_reprs[kr].shape) )
 
@@ -67,59 +66,8 @@ def evaluate_representations(cseq,thread_reprs):
 		plt.legend()
 		plt.show()
 
-
-	# #Clustering
-	# if args.verbose: print("Clustering by subjects...")
-
-	# for ev in evaluators.values():
-	# 	ev.eval_clustering()
-
-	# if args.verbose: print("Results:")
-	# for ev in evaluators.values():
-	# 	ev.eval_clustering()
-	# plt.legend()
-	# plt.show()
-
-	# if args.verbose: print("Results:")
-	# plt.hist(ev.rand_clustering(),histtype='step',label="rand")
-	# for kr,ev in evaluators.items():
-	# 	print( " V-measure ("+kr+"):", ev.vmeasure )
-	# 	plt.scatter(ev.vmeasure,1,label=kr)
-	# plt.legend()
-	# plt.show()
-
-	# #Thread Order
-	# if args.verbose: print("Comparing thread order...")
-
-	# for ev in evaluators.values():
-	# 	ev.eval_order()
-
-	# if args.verbose: print("Results:")
-	# for ev in evaluators.values():
-	# 	ev.eval_order()
-	# plt.legend()
-	# plt.show()
-
-	# if args.verbose: print("Results:")
-	# rand_order_correlations = ev.rand_order()
-	# y = np.array(range(len(rand_order_correlations)))/float(len(rand_order_correlations))
-	# x = np.sort(rand_order_correlations)
-	# y = np.concatenate(([0],y))
-	# x = np.concatenate(([-1],x))
-	# plt.plot(x,y,label="rand",linestyle="--")
-	# for kr,ev in evaluators.items():
-	# 	print( " KS-stat ("+kr+"):", ss.ks_2samp(ev.order_correlations, rand_order_correlations) )
-	# 	y = np.array(range(len(ev.order_correlations)))/float(len(ev.order_correlations))
-	# 	x = np.sort(ev.order_correlations)
-	# 	y = np.concatenate(([0],y))
-	# 	x = np.concatenate(([-1],x))
-	# 	plt.plot(x,y,label=kr)
-	# plt.xlim(-1,1)
-	# plt.legend()
-	# plt.show()
-
-	# #Recommendation
-	# ...
+	#Recommendation
+	...
 
 	if args.verbose: print("Evaluation complete")
 

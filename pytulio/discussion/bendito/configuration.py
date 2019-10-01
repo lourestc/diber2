@@ -11,7 +11,5 @@ class BenditoConfig:
 		with open(configfile,'r') as f:
 			config = json.load(f)
 
-		#print(ascii(jsonstring))
-
 		self.reprs = config['reprs']
 		self.evals = config['evals']
