@@ -1,4 +1,4 @@
-from pytulio.discussion.comseq import *
+from pytulio.discussion.dataformats.comseq import *
 from pytulio.discussion.bendito.representation import *
 from pytulio.discussion.bendito.evaluation import *
 from pytulio.discussion.bendito.configuration import *
