@@ -62,9 +62,12 @@ def evaluate_representations(cseq,thread_reprs):
 		if args.verbose: print("Running evaluation task: "+ke+"...")
 		if args.verbose: print("Results:")
 		for ev in evaluators.values():
-			getattr(ev,ev_func)()
-		plt.legend()
-		plt.show()
+			evald = getattr(ev,ev_func)()
+		if evald:
+			plt.legend()
+			plt.show()
+		else:
+			if args.verbose: print("Can't evaluate for task:", ke)
 
 	#Recommendation
 	...

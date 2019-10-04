@@ -27,7 +27,7 @@ class Evaluator():
 	def eval_clustering( self ):
 		
 		if not self.cseq.has_data['subjects']:
-			return
+			return False
 
 		if Evaluator.rand_vmeasure is None:
 			self._rand_clustering()
@@ -42,6 +42,8 @@ class Evaluator():
 
 		print( " V-measure ("+self.name+"):", self.vmeasure )
 		plt.scatter(self.vmeasure,1,label=self.name)
+
+		return True
 
 	#@staticmethod
 	def _rand_clustering( self, n_rand_permutations=10000 ):
@@ -88,7 +90,7 @@ class Evaluator():
 	def eval_order( self, rand=False ):
 
 		if not self.cseq.has_data['tnumber']:
-			return
+			return False
 
 		if Evaluator.rand_order_correlations is None:
 			self._rand_order()
@@ -119,6 +121,8 @@ class Evaluator():
 		x = np.concatenate(([-1],x))
 		plt.plot(x,y,label=self.name)
 		plt.xlim(-1,1)
+
+		return True
 
 	#@staticmethod			
 	def _rand_order( self, n_rand_permutations=100 ):
