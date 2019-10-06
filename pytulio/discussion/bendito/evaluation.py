@@ -87,6 +87,7 @@ class Evaluator():
 
 		clustering_measures = metrics.homogeneity_completeness_v_measure(s_ids, kmeans.labels_)
 		self.results["vmeasure"] = clustering_measures[2]
+		self.results["kmeans_labels"] = kmeans.labels_
 
 	def _rand_clustering( self, n_rand_permutations=10000 ):
 
