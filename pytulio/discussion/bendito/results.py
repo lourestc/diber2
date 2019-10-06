@@ -37,7 +37,7 @@ class ResultViewer():
 				plt.hist( ev.results["vmeasure"], histtype='step', label=ev.rmethod )
 			else:
 				vmeasure = ev.results["vmeasure"]
-				plt.scatter( ev.results["vmeasure"], 1, label=ev.rmethod )
+				plt.scatter( ev.results["vmeasure"], 1, label=ev.rmethod, alpha=0.5 )
 				
 			print( " V-measure ("+ev.rmethod+"):", vmeasure )
 			with self.resultpath.with_name(self.dataname+"cluster_vmeasures.csv").open('a') as f:
