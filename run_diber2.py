@@ -2,9 +2,9 @@ from pytulio.discussion.dataformats.comseq import *
 from pytulio.discussion.bendito.representation import *
 from pytulio.discussion.bendito.evaluation import *
 from pytulio.discussion.bendito.configuration import *
+from pytulio.discussion.bendito.results import *
 
 import matplotlib.pyplot as plt
-import os
 import argparse
 from pathlib import Path
 
@@ -19,6 +19,7 @@ def parse_args():
 	argparser.add_argument( "outpath", help="output folder path", type=str )
 	argparser.add_argument( "-c", "--configfile", help="json file containing configuration settings", type=str, default="BenDiTO_aux/config.json" )
 	argparser.add_argument( "-r", "--regen-reprs", help="re-generate representations even if already existis in previous output", action="store_true" )
+	argparser.add_argument( "-s", "--show-plots", help="show plots of results, besides only saving", action="store_true" )
 	argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="store_true" )
 	#argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="count", default=0 )
 	#argparser.add_argument( "-v", "--verbosity", type=int, choices=[0, 1, 2], help="increase output verbosity" )
@@ -81,28 +82,46 @@ def evaluate_representations(cseq,thread_reprs):
 
 	for ke in evaluators.keys():
 		if args.verbose: print("Running evaluation task: "+ke+"...")
-		if args.verbose: print("Results:")
-		for kr in thread_reprs.keys(): #for kr in evaluators[ke].values():
 		
-			loadfile = args.outpath + "/" + evaluators[ke][kr].dataname + "/evals/" + kr + "/" + ke
+		if not next(iter(evaluators[ke].values())).can_eval():
+			if args.verbose: print("Can't evaluate for task:", ke)
+			break
+		
+		for kr in evaluators[ke].keys(): #for kr in thread_reprs.keys():
+		
+			dn = next(iter(evaluators[ke].values())).dataname
+			loadfile = args.outpath + "/" + dn + "/evals/" + kr + "/" + ke
 			loadpath = Path(loadfile)
-		
-			if not evaluators[ke][kr].can_eval():
-				if args.verbose: print("Can't evaluate for task:", ke)
-				break
 				
 			if not args.regen_reprs and evaluators[ke][kr].check_results_exist( loadpath ):
 				if args.verbose: print( "Loading {} results from '{}'...".format(ke,loadfile) )
 				evaluators[ke][kr].load( loadpath )
 			else:
-				evaluators[ke][kr].evaluate( thread_reprs[kr].D )
+				if kr == 'random':
+					evaluators[ke][kr].evaluate( None )
+				else:
+					evaluators[ke][kr].evaluate( thread_reprs[kr].D )
 				evaluators[ke][kr].save( loadpath )
-				
-		else: #nobreak
-			plt.legend()
-			plt.show()
 
 	if args.verbose: print("Evaluation complete")
+	return evaluators
+	
+def display_results( evaluators ):
+
+	for ke in evaluators.keys():
+	
+		if not next(iter(evaluators[ke].values())).can_eval():
+			break
+	
+		if args.verbose: print("Results for task:", ke)
+		
+		dn = next(iter(evaluators[ke].values())).dataname
+		resultfolder = args.outpath + "/" + dn + "/results/" + ke
+		resultpath = Path(resultfolder)
+		
+		viewer = ResultViewer(dn,show_plots=args.show_plots)
+		
+		viewer.display( evaluators[ke] )
 
 if __name__ == '__main__':
 
@@ -116,6 +135,8 @@ if __name__ == '__main__':
 
 	thread_reprs = generates_representations( cseq )
 
-	evaluate_representations( cseq, thread_reprs )
+	evaluators = evaluate_representations( cseq, thread_reprs )
+	
+	display_results( evaluators )
 
 	if args.verbose: print("Benchmark over")

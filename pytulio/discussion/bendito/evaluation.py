@@ -4,8 +4,6 @@ import scipy.stats as ss
 from sklearn.cluster import KMeans
 from sklearn import metrics
 
-import matplotlib.pyplot as plt
-
 import sys
 import json
 
@@ -89,13 +87,6 @@ class Evaluator():
 
 		clustering_measures = metrics.homogeneity_completeness_v_measure(s_ids, kmeans.labels_)
 		self.results["vmeasure"] = clustering_measures[2]
-		
-		self.display_clustering()
-
-	def display_clustering( self ):
-	
-		print( " V-measure ("+self.rmethod+"):", self.results["vmeasure"] )
-		plt.scatter( self.results["vmeasure"], 1, label=self.rmethod )
 
 	def _rand_clustering( self, n_rand_permutations=10000 ):
 
@@ -104,18 +95,11 @@ class Evaluator():
 
 		s_ids = [ t[0][self.cseq.subject_key] for t in self.cseq.Threads.values() ]
 
-		Evaluator.rand_vmeasure = []
+		self.results["vmeasure"] = []
 		for _ in range(n_rand_permutations):
 			rand_ids = np.random.choice( np.unique(s_ids), size=len(self.cseq.Threads) )
 			clustering_measures = metrics.homogeneity_completeness_v_measure(s_ids, rand_ids)
-			Evaluator.rand_vmeasure.append( clustering_measures[2] )
-
-		self.display_rclustering()
-
-	def display_rclustering( self ):
-	
-		print( " V-measure (rand):", np.mean(Evaluator.rand_vmeasure), "(mean)" )
-		plt.hist( Evaluator.rand_vmeasure, histtype='step', label="rand" )
+			self.results["vmeasure"].append( clustering_measures[2] )
 
 	def _calc_tdistances( self, repr ):
 
@@ -169,18 +153,6 @@ class Evaluator():
 
 				self.results["order_correlations"].append( ss.spearmanr(stkeys_sorted_by_tnumber,stkeys_sorted_by_tnearest)[0] )
 		
-		self.display_order()
-
-	def display_order( self ):
-
-		print( " KS-stat ("+self.rmethod+"):", ss.ks_2samp(self.results["order_correlations"], self.rand_order_correlations) )
-		y = np.array(range(len(self.results["order_correlations"])))/float(len(self.results["order_correlations"]))
-		x = np.sort(self.results["order_correlations"])
-		y = np.concatenate(([0],y))
-		x = np.concatenate(([-1],x))
-		plt.plot(x,y,label=self.rmethod)
-		plt.xlim(-1,1)
-		
 	def _rand_order( self, n_rand_permutations=100 ):
 
 		if not self.cseq.has_data['tnumber']:
@@ -188,7 +160,7 @@ class Evaluator():
 
 		tkeys = list(self.cseq.Threads.keys())
 
-		Evaluator.rand_order_correlations = []
+		self.results["order_correlations"] = []
 
 		for ks,s in self.cseq.Subjects.items():
 
@@ -201,14 +173,4 @@ class Evaluator():
 
 				for _ in range(n_rand_permutations):
 					rand_stkeys = np.random.choice( stkeys, size=len(stkeys), replace=False )
-					Evaluator.rand_order_correlations.append( ss.spearmanr(stkeys_sorted_by_tnumber,rand_stkeys)[0] )
-		
-		self.display_rorder()
-
-	def display_rorder( self ):
-
-		y = np.array(range(len(Evaluator.rand_order_correlations)))/float(len(Evaluator.rand_order_correlations))
-		x = np.sort(Evaluator.rand_order_correlations)
-		y = np.concatenate(([0],y))
-		x = np.concatenate(([-1],x))
-		plt.plot(x,y,label="rand",linestyle="--")
+					self.results["order_correlations"].append( ss.spearmanr(stkeys_sorted_by_tnumber,rand_stkeys)[0] )
