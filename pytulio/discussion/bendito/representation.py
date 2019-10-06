@@ -1,51 +1,67 @@
+from pytulio.util.error import *
+
 from sklearn.feature_extraction.text import TfidfVectorizer
-
-def monta_tfidf(lista_textos):
-
-	#ORIGINAL: vectorizer = TfidfVectorizer( min_df=2, stop_words = 'english', strip_accents = 'unicode', lowercase=True, ngram_range=(1,2), norm='l2', smooth_idf=True, sublinear_tf=False, use_idf=True )
-	vectorizer = TfidfVectorizer( min_df=1, stop_words = 'english', strip_accents = 'unicode', lowercase=True, ngram_range=(1,1), norm='l2', smooth_idf=True, sublinear_tf=False, use_idf=True )
-	X = vectorizer.fit_transform(lista_textos)
-	
-	return X
-	
-def tfidf_basico(lista_textos):
-	
-	D = monta_tfidf(lista_textos).toarray()
-	return D
-
-def produto_tfidf(lista_textos):
-	
-	D = monta_tfidf(lista_textos)
-	D = -(D @ D.T).toarray() # Distance matrix: dot product between tfidf vectors
-	return D
-
-#####################
-
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from gensim.utils import simple_preprocess
 import numpy as np
 
-def doc2vec( lista_textos, dm=1, repr_size=300, training=40 ):
+import sys
 
-	#doc_ids = [ t[0][cseq.thread_key] for t in cseq.Threads.values() ]
-
-	#taggeddocs = [ TaggedDocument(com.split(),[str(icom)]) for icom,com in enumerate(lista_textos) ]
-
-	taggeddocs = [ TaggedDocument(simple_preprocess(doc), [str(idoc)]) for idoc,doc in enumerate(lista_textos) ]
+class Representator:
 	
-	d2v = Doc2Vec(vector_size=repr_size, min_count=2, epochs=training) #, iter=55)
-	d2v.build_vocab(taggeddocs)
-	d2v.train(taggeddocs, total_examples=d2v.corpus_count, epochs=d2v.epochs) #, epochs=d2v_model.iter)
+	def __init__( self, method, text_list ):
 	
-	#doc_ids = d2v.docvecs.doctags.keys()
-	#D = np.array([ d2v.docvecs[did] for did in doc_ids ])
+		self.method = method
+		self.D = None
+		
+		if method == "TFIDF_base":
+			self.tfidf_base(text_list)
+		elif method == "TFIDF_prod":
+			self.tfidf_product(text_list)
+		elif method == "doc2vec-DM":
+			self.doc2vec_dm(text_list)
+		elif method == "doc2vec-DBOW":
+			self.doc2vec_dbow(text_list)
+		else:
+			eprint("Representation method '{}' is invalid.".format(method))
+			sys.exit(1)
 
-	D = d2v.docvecs.doctag_syn0
+	def build_tfidf(self, text_list):
 
-	return D
+		#ORIGINAL: vectorizer = TfidfVectorizer( min_df=2, stop_words = 'english', strip_accents = 'unicode', lowercase=True, ngram_range=(1,2), norm='l2', smooth_idf=True, sublinear_tf=False, use_idf=True )
+		vectorizer = TfidfVectorizer( min_df=1, stop_words = 'english', strip_accents = 'unicode', lowercase=True, ngram_range=(1,1), norm='l2', smooth_idf=True, sublinear_tf=False, use_idf=True )
+		X = vectorizer.fit_transform(text_list)
+		
+		return X
+		
+	def tfidf_base(self, text_list):
+		
+		self.D = self.build_tfidf(text_list).toarray()
 
-def doc2vec_dm( lista_textos, repr_size=300, training=40 ):
-	return doc2vec( lista_textos, 1, repr_size, training )
+	def tfidf_product(self, text_list):
+		
+		D = self.build_tfidf(text_list)
+		self.D = -(D @ D.T).toarray() # Distance matrix: dot product between tfidf vectors
 
-def doc2vec_dbow( lista_textos, repr_size=300, training=40 ):
-	return doc2vec( lista_textos, 0, repr_size, training )
+	def doc2vec( self, text_list, dm=1, repr_size=300, training=40 ):
+
+		#doc_ids = [ t[0][cseq.thread_key] for t in cseq.Threads.values() ]
+
+		#taggeddocs = [ TaggedDocument(com.split(),[str(icom)]) for icom,com in enumerate(text_list) ]
+
+		taggeddocs = [ TaggedDocument(simple_preprocess(doc), [str(idoc)]) for idoc,doc in enumerate(text_list) ]
+		
+		d2v = Doc2Vec(vector_size=repr_size, min_count=2, epochs=training) #, iter=55)
+		d2v.build_vocab(taggeddocs)
+		d2v.train(taggeddocs, total_examples=d2v.corpus_count, epochs=d2v.epochs) #, epochs=d2v_model.iter)
+		
+		#doc_ids = d2v.docvecs.doctags.keys()
+		#D = np.array([ d2v.docvecs[did] for did in doc_ids ])
+
+		return d2v.docvecs.doctag_syn0
+
+	def doc2vec_dm( self, text_list, repr_size=300, training=40 ):
+		self.D = self.doc2vec( text_list, 1, repr_size, training )
+
+	def doc2vec_dbow( self, text_list, repr_size=300, training=40 ):
+		self.D = self.doc2vec( text_list, 0, repr_size, training )
