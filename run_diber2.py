@@ -6,16 +6,19 @@ from pytulio.discussion.bendito.configuration import *
 import matplotlib.pyplot as plt
 import os
 import argparse
+from pathlib import Path
 
 #globals
 args = None
 config = None
+dataname = None
 
 def parse_args():
 	argparser = argparse.ArgumentParser( description="Run the DiBER2 benchmark" )
 	argparser.add_argument( "comseq", help="input comseq filepath", type=str )
 	argparser.add_argument( "outpath", help="output folder path", type=str )
 	argparser.add_argument( "-c", "--configfile", help="json file containing configuration settings", type=str, default="BenDiTO_aux/config.json" )
+	argparser.add_argument( "-r", "--regen-reprs", help="re-generate representations even if already existis in previous output", action="store_true" )
 	argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="store_true" )
 	#argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="count", default=0 )
 	#argparser.add_argument( "-v", "--verbosity", type=int, choices=[0, 1, 2], help="increase output verbosity" )
@@ -26,6 +29,9 @@ def parse_args():
 def read_data():
 	if args.verbose: print("Reading comseq data from file '{}'...".format(args.comseq))
 	cseq = Comseq( args.comseq )
+	global dataname
+	#dataname = '.'.join(args.comseq.split('/')[-1].split('.')[:-1])
+	dataname = Path(args.comseq).stem
 	if args.verbose: print(" Subjects:", len(cseq.Subjects), "\n", "Threads:", len(cseq.Threads), "\n", "Comments:", len(cseq.Comments))
 	return cseq
 
@@ -48,13 +54,23 @@ def generates_representations(cseq):
 
 	thread_reprs = {}	
 	for rmethod in config.reprs:
-		thread_reprs[rmethod] = Representator( rmethod )
+		thread_reprs[rmethod] = Representator( rmethod, dataname )
 		
 	ttext = cseq.threadtext_list()
 
 	for kr,repr in thread_reprs.items():
-		if args.verbose: print( "Generating", kr, "representation..." )
-		repr.generate( ttext )
+	
+		loadfile = args.outpath + "/" + repr.dataname + "/reprs/" + kr
+		loadpath = Path(loadfile)
+		
+		if not args.regen_reprs and repr.check_repr_exists( loadpath ):
+			if args.verbose: print( "Loading {} representation from '{}'...".format(kr,loadfile) )
+			repr.load( loadpath )
+		else:
+			if args.verbose: print( "Generating", kr, "representation..." )
+			repr.generate( ttext )
+			repr.save( loadpath )
+			
 		if args.verbose: print( " {} shape: {}".format(kr, repr.D.shape) )
 
 	return thread_reprs

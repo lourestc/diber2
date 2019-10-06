@@ -9,9 +9,11 @@ import sys
 
 class Representator:
 	
-	def __init__( self, method ):
+	def __init__( self, method, dataname ):
 	
 		self.method = method
+		self.dataname = dataname		
+		
 		self.D = None
 		
 	def generate( self, text_list ):
@@ -27,6 +29,19 @@ class Representator:
 		else:
 			eprint("Representation method '{}' is invalid.".format(self.method))
 			sys.exit(1)
+			
+	def check_repr_exists( self, loadpath ):
+	
+		return loadpath.with_suffix('.npy').exists()
+	
+	def load( self, loadpath ):
+	
+		self.D = np.load( loadpath.with_suffix('.npy') )
+		
+	def save( self, savepath ):
+	
+		savepath.parent.mkdir( parents=True, exist_ok=True )
+		np.save( savepath, self.D )
 
 	def build_tfidf(self, text_list):
 
