@@ -46,14 +46,16 @@ def generates_representations(cseq):
 
 	if args.verbose: print("Generating thread representations...")
 
+	thread_reprs = {}	
+	for rmethod in config.reprs:
+		thread_reprs[rmethod] = Representator( rmethod )
+		
 	ttext = cseq.threadtext_list()
 
-	thread_reprs = {}
-
-	for rmethod in config.reprs:
-		if args.verbose: print( "Generating", rmethod, "representation..." )
-		thread_reprs[rmethod] = Representator( rmethod, ttext )
-		if args.verbose: print( " {} shape: {}".format(rmethod, thread_reprs[rmethod].D.shape) )
+	for kr,repr in thread_reprs.items():
+		if args.verbose: print( "Generating", kr, "representation..." )
+		repr.generate( ttext )
+		if args.verbose: print( " {} shape: {}".format(kr, repr.D.shape) )
 
 	return thread_reprs
 
@@ -62,8 +64,8 @@ def evaluate_representations(cseq,thread_reprs):
 	if args.verbose: print("Evaluating thread representations...")
 
 	evaluators = {}
-	for rmethod in thread_reprs:
-		evaluators[rmethod] = Evaluator( rmethod, thread_reprs[rmethod].D, cseq )
+	for kr,repr in thread_reprs.items():
+		evaluators[kr] = Evaluator( kr, repr.D, cseq )
 
 	for ke,ev_func in config.evals.items():
 		if args.verbose: print("Running evaluation task: "+ke+"...")

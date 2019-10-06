@@ -9,21 +9,23 @@ import sys
 
 class Representator:
 	
-	def __init__( self, method, text_list ):
+	def __init__( self, method ):
 	
 		self.method = method
 		self.D = None
 		
-		if method == "TFIDF_base":
+	def generate( self, text_list ):
+	
+		if self.method == "TFIDF_base":
 			self.tfidf_base(text_list)
-		elif method == "TFIDF_prod":
+		elif self.method == "TFIDF_prod":
 			self.tfidf_product(text_list)
-		elif method == "doc2vec-DM":
+		elif self.method == "doc2vec-DM":
 			self.doc2vec_dm(text_list)
-		elif method == "doc2vec-DBOW":
+		elif self.method == "doc2vec-DBOW":
 			self.doc2vec_dbow(text_list)
 		else:
-			eprint("Representation method '{}' is invalid.".format(method))
+			eprint("Representation method '{}' is invalid.".format(self.method))
 			sys.exit(1)
 
 	def build_tfidf(self, text_list):
