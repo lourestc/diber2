@@ -89,7 +89,11 @@ class Evaluator():
 
 		clustering_measures = metrics.homogeneity_completeness_v_measure(s_ids, kmeans.labels_)
 		self.results["vmeasure"] = clustering_measures[2]
+		
+		self.display_clustering()
 
+	def display_clustering( self ):
+	
 		print( " V-measure ("+self.rmethod+"):", self.results["vmeasure"] )
 		plt.scatter( self.results["vmeasure"], 1, label=self.rmethod )
 
@@ -106,6 +110,10 @@ class Evaluator():
 			clustering_measures = metrics.homogeneity_completeness_v_measure(s_ids, rand_ids)
 			Evaluator.rand_vmeasure.append( clustering_measures[2] )
 
+		self.display_rclustering()
+
+	def display_rclustering( self ):
+	
 		print( " V-measure (rand):", np.mean(Evaluator.rand_vmeasure), "(mean)" )
 		plt.hist( Evaluator.rand_vmeasure, histtype='step', label="rand" )
 
@@ -160,6 +168,10 @@ class Evaluator():
 				stkeys_sorted_by_tnearest = [ stkeys[it] for it in self.tnearest_per_subj[ks][index_t0] ]
 
 				self.results["order_correlations"].append( ss.spearmanr(stkeys_sorted_by_tnumber,stkeys_sorted_by_tnearest)[0] )
+		
+		self.display_order()
+
+	def display_order( self ):
 
 		print( " KS-stat ("+self.rmethod+"):", ss.ks_2samp(self.results["order_correlations"], self.rand_order_correlations) )
 		y = np.array(range(len(self.results["order_correlations"])))/float(len(self.results["order_correlations"]))
@@ -190,6 +202,10 @@ class Evaluator():
 				for _ in range(n_rand_permutations):
 					rand_stkeys = np.random.choice( stkeys, size=len(stkeys), replace=False )
 					Evaluator.rand_order_correlations.append( ss.spearmanr(stkeys_sorted_by_tnumber,rand_stkeys)[0] )
+		
+		self.display_rorder()
+
+	def display_rorder( self ):
 
 		y = np.array(range(len(Evaluator.rand_order_correlations)))/float(len(Evaluator.rand_order_correlations))
 		x = np.sort(Evaluator.rand_order_correlations)
