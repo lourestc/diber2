@@ -4,7 +4,7 @@ from pytulio.discussion.bendito.evaluation import *
 from pytulio.discussion.bendito.configuration import *
 
 import matplotlib.pyplot as plt
-
+import os
 import argparse
 
 #globals
@@ -14,7 +14,7 @@ config = None
 def parse_args():
 	argparser = argparse.ArgumentParser( description="Run the DiBER2 benchmark" )
 	argparser.add_argument( "comseq", help="input comseq filepath", type=str )
-	argparser.add_argument( "-o", "--outpath", help="output folder path", type=str )
+	argparser.add_argument( "outpath", help="output folder path", type=str )
 	argparser.add_argument( "-c", "--configfile", help="json file containing configuration settings", type=str, default="BenDiTO_aux/config.json" )
 	argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="store_true" )
 	#argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="count", default=0 )
@@ -33,6 +33,13 @@ def read_configuration():
 	if args.verbose: print("Reading configuration settings from file '{}'...".format(args.configfile))
 	global config
 	config = BenditoConfig(args.configfile)
+	if args.verbose: print("Done.")
+	
+def create_output_dir():
+	if args.verbose: print("Creating output folder '{}'...".format(args.outpath))
+	os.makedirs(args.outpath, exist_ok=True)
+	for ev in config.evals.values():
+		os.makedirs(args.outpath+"/"+ev, exist_ok=True)
 	if args.verbose: print("Done.")
 
 def generates_representations(cseq):
@@ -81,6 +88,8 @@ if __name__ == '__main__':
 	if args.verbose: print("Running '{}'".format(__file__))
 
 	read_configuration()
+	
+	create_output_dir()
 
 	cseq = read_data()
 
