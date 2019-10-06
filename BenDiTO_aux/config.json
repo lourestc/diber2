@@ -1,4 +1,4 @@
 {
 	"reprs" : [ "TFIDF_prod", "doc2vec-DM", "doc2vec-DBOW" ],
-	"evals" : { "cluster by subjects":"eval_clustering", "compare thread order":"eval_order" }
+	"evals" : [ "cluster_by_subjects", "compare_thread_order" ]
 }

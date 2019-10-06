@@ -6,28 +6,78 @@ from sklearn import metrics
 
 import matplotlib.pyplot as plt
 
+import sys
+import json
+
 class Evaluator():
 
 	rand_vmeasure = None #static
 	rand_order_correlations = None #static
 
-	def __init__( self, kr, D, cseq ):
+	def __init__( self, etask, rmethod, dataname, cseq ):
 
-		self.name = kr
-		self.repr = D
+		self.etask = etask
+		self.rmethod = rmethod
+		self.dataname = dataname
 		self.cseq = cseq
+		
+		self.results = {}
+		
+		#####################################
 
-		self.vmeasure = None
+		#self.vmeasure = None
 
 		self.tdistances = None
 		self.tnearest_per_subj = None
 
-		self.order_correlations = None
+		#self.order_correlations = None
 
-	def eval_clustering( self ):
+	def evaluate( self, repr ):
+	
+		if self.etask == "cluster_by_subjects":
+			if self.rmethod == "random":
+				self._rand_clustering()
+			else:
+				self.eval_clustering(repr)
+		elif self.etask == "compare_thread_order":
+			if self.rmethod == "random":
+				self._rand_order()
+			else:
+				self.eval_order(repr)
+		else:
+			eprint("Evaluation task '{}' is invalid.".format(self.etask))
+			sys.exit(1)
+			
+	def check_results_exist( self, loadpath ):
+	
+		return loadpath.with_suffix('.json').exists()
+	
+	def load( self, loadpath ):
+	
+		with loadpath.with_suffix('.json').open('r') as f:
+			self.results = json.load(f)
+		
+	def save( self, savepath ):
+	
+		savepath.parent.mkdir( parents=True, exist_ok=True )
+		
+		with savepath.with_suffix('.json').open('w') as f:
+			json.dump(self.results,f)
+
+	def can_eval( self ):
+		
+		if self.etask == "cluster_by_subjects":
+			return self.cseq.has_data['subjects']
+		elif self.etask == "compare_thread_order":
+			return self.cseq.has_data['tnumber']
+		else:
+			eprint("Evaluation task '{}' is invalid.".format(self.etask))
+			sys.exit(1)
+	
+	def eval_clustering( self, repr ):
 		
 		if not self.cseq.has_data['subjects']:
-			return False
+			return
 
 		if Evaluator.rand_vmeasure is None:
 			self._rand_clustering()
@@ -35,17 +85,14 @@ class Evaluator():
 		s_ids = [ t[0][self.cseq.subject_key] for t in self.cseq.Threads.values() ]
 		
 		ns = len(self.cseq.Subjects)
-		kmeans = KMeans( n_clusters=ns, random_state=0, n_jobs=-1 ).fit(self.repr)
+		kmeans = KMeans( n_clusters=ns, random_state=0, n_jobs=-1 ).fit(repr)
 
 		clustering_measures = metrics.homogeneity_completeness_v_measure(s_ids, kmeans.labels_)
-		self.vmeasure = clustering_measures[2]
+		self.results["vmeasure"] = clustering_measures[2]
 
-		print( " V-measure ("+self.name+"):", self.vmeasure )
-		plt.scatter(self.vmeasure,1,label=self.name)
+		print( " V-measure ("+self.rmethod+"):", self.results["vmeasure"] )
+		plt.scatter( self.results["vmeasure"], 1, label=self.rmethod )
 
-		return True
-
-	#@staticmethod
 	def _rand_clustering( self, n_rand_permutations=10000 ):
 
 		if not self.cseq.has_data['subjects']:
@@ -62,19 +109,19 @@ class Evaluator():
 		print( " V-measure (rand):", np.mean(Evaluator.rand_vmeasure), "(mean)" )
 		plt.hist( Evaluator.rand_vmeasure, histtype='step', label="rand" )
 
-	def _calc_tdistances( self ):
+	def _calc_tdistances( self, repr ):
 
 		if self.tdistances is not None:
 			return
 
-		self.tdistances = metrics.pairwise.cosine_distances( self.repr, self.repr )
+		self.tdistances = metrics.pairwise.cosine_distances( repr, repr )
 
-	def _find_nearest_per_subj( self ):
+	def _find_nearest_per_subj( self, repr ):
 
 		if self.tnearest_per_subj is not None:
 			return
 
-		self._calc_tdistances()
+		self._calc_tdistances(repr)
 
 		tkeys = list(self.cseq.Threads.keys())
 
@@ -87,19 +134,19 @@ class Evaluator():
 			dist_sthreads = self.tdistances[i_sthreads][:,i_sthreads]
 			self.tnearest_per_subj[ks] = np.argsort(dist_sthreads, axis=1)
 
-	def eval_order( self, rand=False ):
+	def eval_order( self, repr ):
 
 		if not self.cseq.has_data['tnumber']:
-			return False
+			return
 
 		if Evaluator.rand_order_correlations is None:
 			self._rand_order()
 
-		self._find_nearest_per_subj()
+		self._find_nearest_per_subj(repr)
 
 		tkeys = list(self.cseq.Threads.keys())
 
-		self.order_correlations = []
+		self.results["order_correlations"] = []
 
 		for ks,s in self.cseq.Subjects.items():
 
@@ -112,19 +159,16 @@ class Evaluator():
 				index_t0 = stkeys.index(stkeys_sorted_by_tnumber[0])
 				stkeys_sorted_by_tnearest = [ stkeys[it] for it in self.tnearest_per_subj[ks][index_t0] ]
 
-				self.order_correlations.append( ss.spearmanr(stkeys_sorted_by_tnumber,stkeys_sorted_by_tnearest)[0] )
+				self.results["order_correlations"].append( ss.spearmanr(stkeys_sorted_by_tnumber,stkeys_sorted_by_tnearest)[0] )
 
-		print( " KS-stat ("+self.name+"):", ss.ks_2samp(self.order_correlations, self.rand_order_correlations) )
-		y = np.array(range(len(self.order_correlations)))/float(len(self.order_correlations))
-		x = np.sort(self.order_correlations)
+		print( " KS-stat ("+self.rmethod+"):", ss.ks_2samp(self.results["order_correlations"], self.rand_order_correlations) )
+		y = np.array(range(len(self.results["order_correlations"])))/float(len(self.results["order_correlations"]))
+		x = np.sort(self.results["order_correlations"])
 		y = np.concatenate(([0],y))
 		x = np.concatenate(([-1],x))
-		plt.plot(x,y,label=self.name)
+		plt.plot(x,y,label=self.rmethod)
 		plt.xlim(-1,1)
-
-		return True
-
-	#@staticmethod			
+		
 	def _rand_order( self, n_rand_permutations=100 ):
 
 		if not self.cseq.has_data['tnumber']:

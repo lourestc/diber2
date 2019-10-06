@@ -40,13 +40,6 @@ def read_configuration():
 	global config
 	config = BenditoConfig(args.configfile)
 	if args.verbose: print("Done.")
-	
-def create_output_dir():
-	if args.verbose: print("Creating output folder '{}'...".format(args.outpath))
-	os.makedirs(args.outpath, exist_ok=True)
-	for ev in config.evals.values():
-		os.makedirs(args.outpath+"/"+ev, exist_ok=True)
-	if args.verbose: print("Done.")
 
 def generates_representations(cseq):
 
@@ -80,22 +73,34 @@ def evaluate_representations(cseq,thread_reprs):
 	if args.verbose: print("Evaluating thread representations...")
 
 	evaluators = {}
-	for kr,repr in thread_reprs.items():
-		evaluators[kr] = Evaluator( kr, repr.D, cseq )
+	for ke in config.evals:
+		evaluators[ke] = {}
+		evaluators[ke]['random'] = Evaluator( ke, 'random', dataname, cseq )
+		for kr in thread_reprs.keys():
+			evaluators[ke][kr] = Evaluator( ke, kr, dataname, cseq )
 
-	for ke,ev_func in config.evals.items():
+	for ke in evaluators.keys():
 		if args.verbose: print("Running evaluation task: "+ke+"...")
 		if args.verbose: print("Results:")
-		for ev in evaluators.values():
-			evald = getattr(ev,ev_func)()
-		if evald:
+		for kr in thread_reprs.keys(): #for kr in evaluators[ke].values():
+		
+			loadfile = args.outpath + "/" + evaluators[ke][kr].dataname + "/evals/" + kr + "/" + ke
+			loadpath = Path(loadfile)
+		
+			if not evaluators[ke][kr].can_eval():
+				if args.verbose: print("Can't evaluate for task:", ke)
+				break
+				
+			if not args.regen_reprs and evaluators[ke][kr].check_results_exist( loadpath ):
+				if args.verbose: print( "Loading {} results from '{}'...".format(ke,loadfile) )
+				evaluators[ke][kr].load( loadpath )
+			else:
+				evaluators[ke][kr].evaluate( thread_reprs[kr].D )
+				evaluators[ke][kr].save( loadpath )
+				
+		else: #nobreak
 			plt.legend()
 			plt.show()
-		else:
-			if args.verbose: print("Can't evaluate for task:", ke)
-
-	#Recommendation
-	...
 
 	if args.verbose: print("Evaluation complete")
 
@@ -106,8 +111,6 @@ if __name__ == '__main__':
 	if args.verbose: print("Running '{}'".format(__file__))
 
 	read_configuration()
-	
-	create_output_dir()
 
 	cseq = read_data()
 
