@@ -119,8 +119,7 @@ def display_results( evaluators ):
 		resultfolder = args.outpath + "/" + dn + "/results/" + ke
 		resultpath = Path(resultfolder)
 		
-		viewer = ResultViewer(dn,show_plots=args.show_plots)
-		
+		viewer = ResultViewer( dn, resultpath, show_plots=args.show_plots )
 		viewer.display( evaluators[ke] )
 
 if __name__ == '__main__':

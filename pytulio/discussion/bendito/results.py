@@ -5,13 +5,16 @@ import matplotlib.pyplot as plt
 
 class ResultViewer():
 	
-	def __init__( self, dataname, show_plots=False ):
+	def __init__( self, dataname, resultpath, show_plots=False ):
 		
 		self.dataname = dataname
+		self.resultpath = resultpath
 		self.show_plots = show_plots
 		
 	def display( self, evaluators ):
 	
+		self.resultpath.parent.mkdir( parents=True, exist_ok=True )
+		
 		etask = next(iter(evaluators.values())).etask
 		
 		if etask == "cluster_by_subjects":
@@ -38,7 +41,7 @@ class ResultViewer():
 		if self.show_plots:
 			plt.show()
 			
-		plt.savefig("t1.png")
+		plt.savefig( self.resultpath.with_name("cluster_vmeasures.png") )
 		plt.clf()
 		
 	def _display_order( self, evaluators ):
@@ -66,5 +69,5 @@ class ResultViewer():
 		if self.show_plots:
 			plt.show()
 			
-		plt.savefig("t2.png")
+		plt.savefig( self.resultpath.with_name("order_ksstats.png") )
 		plt.clf()
