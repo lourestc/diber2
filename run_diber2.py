@@ -18,7 +18,7 @@ def parse_args():
 	argparser.add_argument( "comseq", help="input comseq filepath", type=str )
 	argparser.add_argument( "outpath", help="output folder path", type=str )
 	argparser.add_argument( "-c", "--configfile", help="json file containing configuration settings", type=str, default="BenDiTO_aux/config.json" )
-	argparser.add_argument( "-r", "--regen-reprs", help="re-generate representations even if already existis in previous output", action="store_true" )
+	argparser.add_argument( "-r", "--rerun-all", help="rerun representation generation and evaluation even if could be loaded", action="store_true" )
 	argparser.add_argument( "-s", "--show-plots", help="show plots of results, besides only saving", action="store_true" )
 	argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="store_true" )
 	#argparser.add_argument( "-v", "--verbose", help="increase output verbosity", action="count", default=0 )
