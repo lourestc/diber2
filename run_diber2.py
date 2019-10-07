@@ -54,7 +54,7 @@ def generates_representations(cseq):
 
 	for kr,repr in thread_reprs.items():
 	
-		if not args.regen_reprs and repr.check_repr_exists( args.outpath ):
+		if not args.rerun_all and repr.check_repr_exists( args.outpath ):
 			if args.verbose: print( "Loading {} representation from '{}'...".format(kr,args.outpath) )
 			repr.load( args.outpath )
 		else:
@@ -88,7 +88,7 @@ def evaluate_representations(cseq,thread_reprs):
 		
 		for kr in evaluators[ke].keys(): #for kr in thread_reprs.keys():
 		
-			if not args.regen_reprs and evaluators[ke][kr].check_results_exist( args.outpath ):
+			if not args.rerun_all and evaluators[ke][kr].check_results_exist( args.outpath ):
 				if args.verbose: print( "Loading {} results from '{}'...".format(ke,args.outpath) )
 				evaluators[ke][kr].load( args.outpath )
 			else:
