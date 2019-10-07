@@ -4,6 +4,7 @@ import scipy.stats as ss
 from sklearn.cluster import KMeans
 from sklearn import metrics
 
+from pathlib import Path
 import sys
 import json
 
@@ -46,19 +47,27 @@ class Evaluator():
 			eprint("Evaluation task '{}' is invalid.".format(self.etask))
 			sys.exit(1)
 			
-	def check_results_exist( self, loadpath ):
+	def check_results_exist( self, dir ):
+	
+		loadfile = dir + "/evals/" + self.dataname + "-" + self.rmethod + "-" + self.etask
+		loadpath = Path(loadfile)
 	
 		return loadpath.with_suffix('.json').exists()
 	
-	def load( self, loadpath ):
+	def load( self, dir ):
 	
+		loadfile = dir + "/evals/" + self.dataname + "-" + self.rmethod + "-" + self.etask
+		loadpath = Path(loadfile)
+		
 		with loadpath.with_suffix('.json').open('r') as f:
 			self.results = json.load(f)
 		
-	def save( self, savepath ):
+	def save( self, dir ):
 	
-		savepath.parent.mkdir( parents=True, exist_ok=True )
+		savefile = dir + "/evals/" + self.dataname + "-" + self.rmethod + "-" + self.etask
+		savepath = Path(savefile)
 		
+		savepath.parent.mkdir( parents=True, exist_ok=True )
 		with savepath.with_suffix('.json').open('w') as f:
 			json.dump(self.results,f)
 

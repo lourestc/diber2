@@ -6,6 +6,7 @@ from gensim.utils import simple_preprocess
 import numpy as np
 from sklearn.manifold import TSNE
 
+from pathlib import Path
 import sys
 
 class Representator:
@@ -33,16 +34,25 @@ class Representator:
 			eprint("Representation method '{}' is invalid.".format(self.method))
 			sys.exit(1)
 			
-	def check_repr_exists( self, loadpath ):
+	def check_repr_exists( self, dir ):
 	
+		loadfile = dir + "/reprs/" + self.dataname + "-" + self.method
+		loadpath = Path(loadfile)
+		
 		return loadpath.with_suffix('.npy').exists()
 	
-	def load( self, loadpath ):
+	def load( self, dir ):
 	
+		loadfile = dir + "/reprs/" + self.dataname + "-" + self.method
+		loadpath = Path(loadfile)
+		
 		self.D = np.load( loadpath.with_suffix('.npy') )
 		
-	def save( self, savepath ):
+	def save( self, dir ):
 	
+		savefile = dir + "/reprs/" + self.dataname + "-" + self.method
+		savepath = Path(savefile)
+		
 		savepath.parent.mkdir( parents=True, exist_ok=True )
 		np.save( savepath, self.D )
 

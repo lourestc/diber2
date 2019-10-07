@@ -54,16 +54,13 @@ def generates_representations(cseq):
 
 	for kr,repr in thread_reprs.items():
 	
-		loadfile = args.outpath + "/" + repr.dataname + "/reprs/" + kr
-		loadpath = Path(loadfile)
-		
-		if not args.regen_reprs and repr.check_repr_exists( loadpath ):
-			if args.verbose: print( "Loading {} representation from '{}'...".format(kr,loadfile) )
-			repr.load( loadpath )
+		if not args.regen_reprs and repr.check_repr_exists( args.outpath ):
+			if args.verbose: print( "Loading {} representation from '{}'...".format(kr,args.outpath) )
+			repr.load( args.outpath )
 		else:
 			if args.verbose: print( "Generating", kr, "representation..." )
 			repr.generate( ttext )
-			repr.save( loadpath )
+			repr.save( args.outpath )
 			
 		repr.run_tsne()
 			
@@ -91,32 +88,24 @@ def evaluate_representations(cseq,thread_reprs):
 		
 		for kr in evaluators[ke].keys(): #for kr in thread_reprs.keys():
 		
-			dn = next(iter(evaluators[ke].values())).dataname
-			loadfile = args.outpath + "/" + dn + "/evals/" + kr + "/" + ke
-			loadpath = Path(loadfile)
-				
-			if not args.regen_reprs and evaluators[ke][kr].check_results_exist( loadpath ):
-				if args.verbose: print( "Loading {} results from '{}'...".format(ke,loadfile) )
-				evaluators[ke][kr].load( loadpath )
+			if not args.regen_reprs and evaluators[ke][kr].check_results_exist( args.outpath ):
+				if args.verbose: print( "Loading {} results from '{}'...".format(ke,args.outpath) )
+				evaluators[ke][kr].load( args.outpath )
 			else:
 				if kr == 'random':
 					evaluators[ke][kr].evaluate( None )
 				else:
 					evaluators[ke][kr].evaluate( thread_reprs[kr].D )
-				evaluators[ke][kr].save( loadpath )
+				evaluators[ke][kr].save( args.outpath )
 
 	if args.verbose: print("Evaluation complete")
 	return evaluators
 	
 def display_results( cseq, thread_reprs, evaluators ):
 
-	for repr in thread_reprs.values():
-		dn = dataname
-		resultfolder = args.outpath + "/" + dn + "/results/x"
-		resultpath = Path(resultfolder)
-		
-		viewer = ResultViewer( dn, resultpath, show_plots=args.show_plots )
-		viewer.scatter_tsne( cseq, repr.tsne )
+	for kr,repr in thread_reprs.items():		
+		viewer = ResultViewer( dataname, args.outpath, show_plots=args.show_plots )
+		viewer.scatter_tsne( cseq, repr.tsne, kr )
 	
 	for ke in evaluators.keys():
 	
@@ -125,11 +114,7 @@ def display_results( cseq, thread_reprs, evaluators ):
 	
 		if args.verbose: print("Results for task:", ke)
 		
-		dn = next(iter(evaluators[ke].values())).dataname
-		resultfolder = args.outpath + "/" + dn + "/results/" + ke
-		resultpath = Path(resultfolder)
-		
-		viewer = ResultViewer( dn, resultpath, show_plots=args.show_plots )
+		viewer = ResultViewer( dataname, args.outpath, show_plots=args.show_plots )
 		viewer.display( evaluators[ke] )
 
 if __name__ == '__main__':

@@ -3,16 +3,22 @@ import scipy.stats as ss
 
 import matplotlib.pyplot as plt
 
+from pathlib import Path
+
 class ResultViewer():
 	
-	def __init__( self, dataname, resultpath, show_plots=False ):
+	def __init__( self, dataname, dir, show_plots=False ):
 		
 		self.dataname = dataname
+		
+		resultfolder = dir + "/results/x"
+		resultpath = Path(resultfolder)
 		self.resultpath = resultpath
+		
 		self.show_plots = show_plots
 		
 	def display( self, evaluators ):
-	
+		
 		self.resultpath.parent.mkdir( parents=True, exist_ok=True )
 		
 		etask = next(iter(evaluators.values())).etask
@@ -27,7 +33,7 @@ class ResultViewer():
 			
 	def _display_clustering( self, evaluators ):
 	
-		with self.resultpath.with_name(self.dataname+"cluster_vmeasures.csv").open('w') as f:
+		with self.resultpath.with_name(self.dataname+"-cluster_vmeasures.csv").open('w') as f:
 			f.write("Representation,V-measure")
 			
 		plt.figure()
@@ -42,7 +48,7 @@ class ResultViewer():
 				plt.scatter( ev.results["vmeasure"], 1, label=ev.rmethod, alpha=0.5 )
 				
 			print( " V-measure ("+ev.rmethod+"):", vmeasure )
-			with self.resultpath.with_name(self.dataname+"cluster_vmeasures.csv").open('a') as f:
+			with self.resultpath.with_name(self.dataname+"-cluster_vmeasures.csv").open('a') as f:
 				f.write("\n"+ev.rmethod+","+str(vmeasure))
 			
 		plt.xlim(0,1)
@@ -51,7 +57,7 @@ class ResultViewer():
 		if self.show_plots:
 			plt.show()
 			
-		plt.savefig( self.resultpath.with_name(self.dataname+"cluster_vmeasures.png") )
+		plt.savefig( self.resultpath.with_name(self.dataname+"-cluster_vmeasures.png") )
 		plt.clf()
 	
 	def _colors_from_labels( self, labels ):
@@ -71,7 +77,9 @@ class ResultViewer():
         
 		return colors#, legend
 	
-	def scatter_tsne( self, cseq, tsne ):
+	def scatter_tsne( self, cseq, tsne, rmethod ):
+	
+		self.resultpath.parent.mkdir( parents=True, exist_ok=True )
 
 		x,y = zip(*tsne)
 		
@@ -87,12 +95,12 @@ class ResultViewer():
 		#plt.axis('off')
 		plt.gca().axes.get_yaxis().set_visible(False)
 		plt.gca().axes.get_xaxis().set_visible(False)
-		plt.savefig( "t1.png" )
+		plt.savefig( self.resultpath.with_name(self.dataname+"-"+rmethod+"-tsne.png") )
 		plt.clf()
 	
 	def _display_order( self, evaluators ):
 	
-		with self.resultpath.with_name(self.dataname+"order_ksstats.csv").open('w') as f:
+		with self.resultpath.with_name(self.dataname+"-order_ksstats.csv").open('w') as f:
 			f.write("Representation,KS-stat")
 		
 		for kr,ev in evaluators.items():
@@ -103,7 +111,7 @@ class ResultViewer():
 				ls='-'
 				ksstat = ss.ks_2samp(ev.results["order_correlations"], evaluators['random'].results["order_correlations"])
 				print( " KS-stat ("+ev.rmethod+"):", ksstat )
-				with self.resultpath.with_name(self.dataname+"order_ksstats.csv").open('a') as f:
+				with self.resultpath.with_name(self.dataname+"-order_ksstats.csv").open('a') as f:
 					f.write("\n"+ev.rmethod+","+str(ksstat))
 				
 			ncorrs = len(ev.results["order_correlations"])
@@ -121,5 +129,5 @@ class ResultViewer():
 		if self.show_plots:
 			plt.show()
 			
-		plt.savefig( self.resultpath.with_name(self.dataname+"order_ksstats.png") )
+		plt.savefig( self.resultpath.with_name(self.dataname+"-order_ksstats.png") )
 		plt.clf()
