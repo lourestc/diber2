@@ -4,6 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from gensim.utils import simple_preprocess
 import numpy as np
+from sklearn.manifold import TSNE
 
 import sys
 
@@ -15,6 +16,8 @@ class Representator:
 		self.dataname = dataname		
 		
 		self.D = None
+		
+		self.tsne = None
 		
 	def generate( self, text_list ):
 	
@@ -82,3 +85,6 @@ class Representator:
 
 	def doc2vec_dbow( self, text_list, repr_size=300, training=40 ):
 		self.D = self.doc2vec( text_list, 0, repr_size, training )
+		
+	def run_tsne( self ):
+		self.tsne = TSNE(n_components=2,perplexity=5,learning_rate=200.0).fit_transform(self.D)

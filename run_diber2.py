@@ -65,6 +65,8 @@ def generates_representations(cseq):
 			repr.generate( ttext )
 			repr.save( loadpath )
 			
+		repr.run_tsne()
+			
 		if args.verbose: print( " {} shape: {}".format(kr, repr.D.shape) )
 
 	return thread_reprs
@@ -106,8 +108,16 @@ def evaluate_representations(cseq,thread_reprs):
 	if args.verbose: print("Evaluation complete")
 	return evaluators
 	
-def display_results( evaluators ):
+def display_results( cseq, thread_reprs, evaluators ):
 
+	for repr in thread_reprs.values():
+		dn = dataname
+		resultfolder = args.outpath + "/" + dn + "/results/x"
+		resultpath = Path(resultfolder)
+		
+		viewer = ResultViewer( dn, resultpath, show_plots=args.show_plots )
+		viewer.scatter_tsne( cseq, repr.tsne )
+	
 	for ke in evaluators.keys():
 	
 		if not next(iter(evaluators[ke].values())).can_eval():
@@ -136,6 +146,6 @@ if __name__ == '__main__':
 
 	evaluators = evaluate_representations( cseq, thread_reprs )
 	
-	display_results( evaluators )
+	display_results( cseq, thread_reprs, evaluators )
 
 	if args.verbose: print("Benchmark over")

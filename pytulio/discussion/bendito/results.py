@@ -29,10 +29,12 @@ class ResultViewer():
 	
 		with self.resultpath.with_name(self.dataname+"cluster_vmeasures.csv").open('w') as f:
 			f.write("Representation,V-measure")
-		
-		for kr,ev in evaluators.items():
 			
-			if kr == "random":
+		plt.figure()
+		
+		for ev in evaluators.values():
+			
+			if ev.rmethod == "random":
 				vmeasure = np.mean(ev.results["vmeasure"])
 				plt.hist( ev.results["vmeasure"], histtype='step', label=ev.rmethod )
 			else:
@@ -51,7 +53,43 @@ class ResultViewer():
 			
 		plt.savefig( self.resultpath.with_name(self.dataname+"cluster_vmeasures.png") )
 		plt.clf()
+	
+	def _colors_from_labels( self, labels ):
+    
+		color_code_unique = list(set(labels))
+		color_codes = []
+		for x in labels:
+			color_codes.append( float(color_code_unique.index(x)) )
+
+		cmap = plt.get_cmap('jet')
+		colors = cmap([ c/max(color_codes) for c in color_codes ])
+
+		# legend = []
+		# for x in color_code_unique:
+			# c = cmap( color_code_unique.index(x)/max(color_codes) )
+			# legend.append( Line2D([0], [0], marker='o', color=c, lw=4, label=d) )
+        
+		return colors#, legend
+	
+	def scatter_tsne( self, cseq, tsne ):
+
+		x,y = zip(*tsne)
 		
+		s_ids = [ t[0][cseq.subject_key] for t in cseq.Threads.values() ]
+		colors = self._colors_from_labels(s_ids)
+		
+		plt.figure()
+		plt.scatter(x, y, c=colors, alpha=0.5)
+		
+		if self.show_plots:
+			plt.show()
+			
+		#plt.axis('off')
+		plt.gca().axes.get_yaxis().set_visible(False)
+		plt.gca().axes.get_xaxis().set_visible(False)
+		plt.savefig( "t1.png" )
+		plt.clf()
+	
 	def _display_order( self, evaluators ):
 	
 		with self.resultpath.with_name(self.dataname+"order_ksstats.csv").open('w') as f:
