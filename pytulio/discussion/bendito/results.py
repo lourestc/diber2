@@ -86,15 +86,15 @@ class ResultViewer():
 		s_ids = [ t[0][cseq.subject_key] for t in cseq.Threads.values() ]
 		colors = self._colors_from_labels(s_ids)
 		
-		plt.figure()
 		plt.scatter(x, y, c=colors, alpha=0.5)
 		
-		if self.show_plots:
-			plt.show()
-			
 		#plt.axis('off')
 		plt.gca().axes.get_yaxis().set_visible(False)
 		plt.gca().axes.get_xaxis().set_visible(False)
+
+		if self.show_plots:
+			plt.show()
+
 		plt.savefig( self.resultpath.with_name(self.dataname+"-"+rmethod+"-tsne.png") )
 		plt.clf()
 	

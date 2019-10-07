@@ -97,4 +97,4 @@ class Representator:
 		self.D = self.doc2vec( text_list, 0, repr_size, training )
 		
 	def run_tsne( self ):
-		self.tsne = TSNE(n_components=2,perplexity=5,learning_rate=200.0).fit_transform(self.D)
+		self.tsne = TSNE(n_components=2,perplexity=10,learning_rate=200.0).fit_transform(self.D)
