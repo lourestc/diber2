@@ -103,9 +103,7 @@ def evaluate_representations(cseq,thread_reprs):
 	
 def display_results( cseq, thread_reprs, evaluators ):
 
-	for kr,repr in thread_reprs.items():		
-		viewer = ResultViewer( dataname, args.outpath, show_plots=args.show_plots )
-		viewer.scatter_tsne( cseq, repr.tsne, kr )
+	viewer = ResultViewer( dataname, args.outpath, show_plots=args.show_plots )
 	
 	for ke in evaluators.keys():
 	
@@ -114,8 +112,11 @@ def display_results( cseq, thread_reprs, evaluators ):
 	
 		if args.verbose: print("Results for task:", ke)
 		
-		viewer = ResultViewer( dataname, args.outpath, show_plots=args.show_plots )
 		viewer.display( evaluators[ke] )
+		
+	if args.verbose: print("Plotting t-SNE visualizations...")
+	for kr,repr in thread_reprs.items():		
+		viewer.scatter_tsne( cseq, repr.tsne, kr )
 
 if __name__ == '__main__':
 
