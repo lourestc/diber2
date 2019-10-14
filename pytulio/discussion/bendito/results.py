@@ -112,7 +112,7 @@ class ResultViewer():
 				ksstat = ss.ks_2samp(ev.results["order_correlations"], evaluators['random'].results["order_correlations"])
 				print( " KS-stat ("+ev.rmethod+"):", ksstat )
 				with self.resultpath.with_name(self.dataname+"-order_ksstats.csv").open('a') as f:
-					f.write("\n"+ev.rmethod+","+str(ksstat))
+					f.write("\n"+ev.rmethod+","+str(ksstat[0]))
 				
 			ncorrs = len(ev.results["order_correlations"])
 			y = np.array(range(ncorrs)) / float(ncorrs)
