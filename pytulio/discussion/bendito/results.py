@@ -124,6 +124,8 @@ class ResultViewer():
 		
 		plt.xlim(-1,1)
 		plt.ylim(0,1)
+		plt.ylabel("CDF(ρ)")
+		plt.xlabel("Correlation ρ")
 		plt.legend()
 		
 		if self.show_plots:
