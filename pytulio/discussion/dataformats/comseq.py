@@ -35,7 +35,10 @@ class Comseq:
 
     def _check_data_availability( self ):
         
-        #Thread number / thread sequence
+        #Comment timestamp
+		self.has_data['ctime'] = 'ts' in next(iter(self.Comments.values()))
+		
+		#Thread number / thread sequence
         for c in self.Comments.values():
             if 'tnumber' not in c:
                 self.has_data['tnumber'] = False
